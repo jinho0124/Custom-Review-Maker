@@ -67,7 +67,12 @@ const appData = {
           font: '기본체',
           photos: [],
           bestReview: false,
-          reviewDate: new Date().toISOString().split('T')[0]
+          reviewDate: new Date().toISOString().split('T')[0],
+          reviewCount: 12,
+          avgRating: 4.8,
+          deliveryType: '알뜰배달',
+          dateType: 'relative',
+          relativeDate: '1개월 전'
       },
       cart: []
   };
@@ -99,7 +104,10 @@ const appData = {
       loadCartFromStorage();
       
       // 오늘 날짜 설정
-      document.getElementById('review-date').value = currentState.reviewData.reviewDate;
+      const reviewDateInput = document.getElementById('review-date');
+      if (reviewDateInput) {
+          reviewDateInput.value = currentState.reviewData.reviewDate;
+      }
       
       // 메인 화면으로 전환
       setTimeout(() => {
@@ -150,6 +158,11 @@ const appData = {
           photoUpload.addEventListener('change', handlePhotoUpload);
       }
       
+      // 날짜 유형 라디오 버튼
+      document.querySelectorAll('input[name="date-type"]').forEach(radio => {
+          radio.addEventListener('change', handleDateTypeChange);
+      });
+      
       // 폼 입력
       setupFormListeners();
       
@@ -169,7 +182,8 @@ const appData = {
   function setupFormListeners() {
       const inputs = [
           'member-name', 'store-name', 'review-title', 'review-content', 
-          'font-select', 'member-grade', 'best-review', 'review-date'
+          'font-select', 'member-grade', 'best-review', 'review-date',
+          'review-count', 'avg-rating', 'delivery-type', 'relative-date', 'absolute-date'
       ];
       
       inputs.forEach(id => {
@@ -313,7 +327,12 @@ const appData = {
           font: '기본체',
           photos: [],
           bestReview: false,
-          reviewDate: new Date().toISOString().split('T')[0]
+          reviewDate: new Date().toISOString().split('T')[0],
+          reviewCount: 12,
+          avgRating: 4.8,
+          deliveryType: '알뜰배달',
+          dateType: 'relative',
+          relativeDate: '1개월 전'
       };
       
       // 폼 입력 초기화
@@ -326,10 +345,34 @@ const appData = {
           if (element) element.value = '';
       });
       
-      document.getElementById('member-grade').value = '골드회원';
-      document.getElementById('font-select').value = '기본체';
-      document.getElementById('best-review').checked = false;
-      document.getElementById('review-date').value = currentState.reviewData.reviewDate;
+      // 폼 요소들 초기화
+      const selects = {
+          'member-grade': '골드회원',
+          'font-select': '기본체',
+          'delivery-type': '알뜰배달',
+          'relative-date': '1개월 전'
+      };
+      
+      Object.entries(selects).forEach(([id, value]) => {
+          const element = document.getElementById(id);
+          if (element) element.value = value;
+      });
+      
+      const checkboxes = ['best-review'];
+      checkboxes.forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.checked = false;
+      });
+      
+      const numbers = {
+          'review-count': 12,
+          'avg-rating': 4.8
+      };
+      
+      Object.entries(numbers).forEach(([id, value]) => {
+          const element = document.getElementById(id);
+          if (element) element.value = value;
+      });
       
       // 별점 초기화
       setRating(5);
@@ -338,7 +381,10 @@ const appData = {
       selectEmoji('😊');
       
       // 사진 초기화
-      document.getElementById('photo-preview').innerHTML = '';
+      const photoPreview = document.getElementById('photo-preview');
+      if (photoPreview) {
+          photoPreview.innerHTML = '';
+      }
   }
   
   function handlePhotoUpload(event) {
@@ -362,6 +408,8 @@ const appData = {
   
   function updatePhotoPreview() {
       const container = document.getElementById('photo-preview');
+      if (!container) return;
+      
       container.innerHTML = '';
       
       currentState.reviewData.photos.forEach((photo, index) => {
@@ -402,6 +450,8 @@ const appData = {
       const container = document.getElementById('emoji-container');
       const emojis = appData.emojis[category] || [];
       
+      if (!container) return;
+      
       container.innerHTML = '';
       
       emojis.forEach(emoji => {
@@ -418,6 +468,12 @@ const appData = {
   function selectEmoji(emoji) {
       currentState.reviewData.emoji = emoji;
       
+      // 이모티콘 입력 필드 업데이트
+      const emojiInput = document.getElementById('emoji-input');
+      if (emojiInput) {
+          emojiInput.value = emoji;
+      }
+      
       // 시각적 선택 업데이트
       document.querySelectorAll('.emoji-option').forEach(option => {
           option.classList.remove('selected');
@@ -431,16 +487,53 @@ const appData = {
       updatePreview();
   }
   
+  function handleDateTypeChange() {
+      const dateType = document.querySelector('input[name="date-type"]:checked').value;
+      const relativeDate = document.getElementById('relative-date');
+      const absoluteDate = document.getElementById('absolute-date');
+      
+      currentState.reviewData.dateType = dateType;
+      
+      if (dateType === 'relative') {
+          relativeDate.classList.remove('hidden');
+          absoluteDate.classList.add('hidden');
+      } else {
+          relativeDate.classList.add('hidden');
+          absoluteDate.classList.remove('hidden');
+      }
+      
+      updateReviewData();
+  }
+  
   function updateReviewData() {
       // 폼 데이터 수집
-      currentState.reviewData.memberName = document.getElementById('member-name').value;
-      currentState.reviewData.memberGrade = document.getElementById('member-grade').value;
-      currentState.reviewData.storeName = document.getElementById('store-name').value;
-      currentState.reviewData.title = document.getElementById('review-title').value;
-      currentState.reviewData.content = document.getElementById('review-content').value;
-      currentState.reviewData.font = document.getElementById('font-select').value;
-      currentState.reviewData.bestReview = document.getElementById('best-review').checked;
-      currentState.reviewData.reviewDate = document.getElementById('review-date').value;
+      const getValue = (id, defaultValue = '') => {
+          const element = document.getElementById(id);
+          return element ? element.value : defaultValue;
+      };
+      
+      currentState.reviewData.memberName = getValue('member-name');
+      currentState.reviewData.memberGrade = getValue('member-grade', '골드회원');
+      currentState.reviewData.storeName = getValue('store-name');
+      currentState.reviewData.title = getValue('review-title');
+      currentState.reviewData.content = getValue('review-content');
+      currentState.reviewData.font = getValue('font-select', '기본체');
+      currentState.reviewData.reviewCount = parseInt(getValue('review-count', '12'));
+      currentState.reviewData.avgRating = parseFloat(getValue('avg-rating', '4.8'));
+      currentState.reviewData.deliveryType = getValue('delivery-type', '알뜰배달');
+      
+      const bestReviewElement = document.getElementById('best-review');
+      if (bestReviewElement) {
+          currentState.reviewData.bestReview = bestReviewElement.checked;
+      }
+      
+      // 날짜 처리
+      const dateType = document.querySelector('input[name="date-type"]:checked');
+      if (dateType && dateType.value === 'relative') {
+          currentState.reviewData.relativeDate = getValue('relative-date', '1개월 전');
+      } else {
+          currentState.reviewData.reviewDate = getValue('absolute-date') || new Date().toISOString().split('T')[0];
+      }
       
       updatePreview();
   }
@@ -451,6 +544,20 @@ const appData = {
       const data = currentState.reviewData;
       
       if (!brand || !preview) return;
+      
+      // 브랜드별 클래스 추가
+      preview.className = 'review-preview';
+      switch(brand.name) {
+          case '배만':
+              preview.classList.add('brand-baemin', 'preview-baemin');
+              break;
+          case '여기요':
+              preview.classList.add('brand-yogiyo', 'preview-yogiyo');
+              break;
+          case '큐팡이츠':
+              preview.classList.add('brand-coupangeats', 'preview-coupangeats');
+              break;
+      }
       
       let previewHTML = '';
       
@@ -464,7 +571,6 @@ const appData = {
           case '큐팡이츠':
               previewHTML = generateCoupangEatsPreview(data);
               break;
-          // 다른 브랜드들도 추가...
           default:
               previewHTML = generateDefaultPreview(data);
       }
@@ -485,6 +591,16 @@ const appData = {
       const memberGrade = data.memberGrade ? 
           `<span class="user-grade">${data.memberGrade}</span>` : '';
       
+      const displayDate = data.dateType === 'relative' ? data.relativeDate : data.reviewDate;
+      
+      const menuItems = Array.from(document.querySelectorAll('#menu-list .menu-tag')).map(tag => 
+          tag.textContent.replace('×', '').trim()
+      ).filter(text => text);
+      
+      const menuButtons = menuItems.map(menu => 
+          `<button class="help-btn">${menu}</button>`
+      ).join(' ');
+      
       return `
           <div class="preview-baemin">
               <div class="brand-subtitle">${currentState.selectedBrand.subtitle}</div>
@@ -494,23 +610,24 @@ const appData = {
                   <div class="user-avatar">${(data.memberName || '사용자')[0]}</div>
                   <div class="user-info">
                       <div class="username">${data.memberName || '사용자명'} ${memberGrade}</div>
-                      <div class="user-stats">리뷰 12 • 평균별점 4.8</div>
+                      <div class="user-stats">리뷰 ${data.reviewCount} • 평균별점 ${data.avgRating}</div>
                   </div>
               </div>
               
               <div class="store-name">${data.storeName || '가게명'}</div>
-              <div class="rating">${stars} ${data.reviewDate}</div>
+              <div class="rating">${stars} ${displayDate}</div>
               
-              ${photosHTML}
+              <div class="review-date-info">${data.deliveryType} • ${displayDate}</div>
+              
+              <div class="review-photos">${photosHTML}</div>
               
               <div class="review-text">
                   <strong>${data.title || '리뷰 제목'}</strong><br>
                   ${data.content || '리뷰 내용을 입력해주세요.'} ${data.emoji}
               </div>
               
-              <div style="margin-top: 12px;">
-                  <button class="help-btn">맛최킹 왕 👍</button>
-                  <button class="help-btn">본모자 로제 떡볶이 👍</button>
+              <div class="help-buttons">
+                  ${menuButtons}
               </div>
               
               <div style="margin-top: 12px; padding: 8px; background: #e8f5e8; border-radius: 8px; font-size: 12px;">
@@ -532,6 +649,8 @@ const appData = {
       const memberGrade = data.memberGrade ? 
           `<span class="user-grade">${data.memberGrade}</span>` : '';
       
+      const displayDate = data.dateType === 'relative' ? data.relativeDate : data.reviewDate;
+      
       return `
           <div class="preview-yogiyo">
               <div class="brand-subtitle">${currentState.selectedBrand.subtitle}</div>
@@ -539,7 +658,7 @@ const appData = {
               
               <div class="user-profile">
                   <div class="username">${data.memberName || '사용자명'} ${memberGrade}</div>
-                  <div class="user-stats">리뷰 290 • 평균별점 4.7</div>
+                  <div class="user-stats">리뷰 ${data.reviewCount} • 평균별점 ${data.avgRating}</div>
               </div>
               
               <div class="store-name">${data.storeName || '가게명'}</div>
@@ -557,7 +676,7 @@ const appData = {
               </div>
               
               <div style="margin-top: 12px; font-size: 12px; color: #666;">
-                  ${data.reviewDate} • 알뜰배달
+                  ${displayDate} • ${data.deliveryType}
               </div>
               
               <div class="actions" style="margin-top: 12px;">
@@ -580,6 +699,8 @@ const appData = {
       const memberGrade = data.memberGrade ? 
           `<span class="user-grade">${data.memberGrade}</span>` : '';
       
+      const displayDate = data.dateType === 'relative' ? data.relativeDate : data.reviewDate;
+      
       return `
           <div class="preview-coupangeats">
               <div class="brand-subtitle">${currentState.selectedBrand.subtitle}</div>
@@ -587,11 +708,11 @@ const appData = {
               
               <div class="user-profile">
                   <div class="username">${data.memberName || 'one'} ${memberGrade}</div>
-                  <div class="user-stats">리뷰 62 • 평균별점 4.9</div>
+                  <div class="user-stats">리뷰 ${data.reviewCount} • 평균별점 ${data.avgRating}</div>
               </div>
               
               <div class="store-name">${data.storeName || '가게명'}</div>
-              <div class="rating">${stars} ${data.reviewDate}</div>
+              <div class="rating">${stars} ${displayDate}</div>
               
               ${photosHTML}
               
@@ -613,6 +734,8 @@ const appData = {
           `<img src="${photo}" class="photo-preview" alt="리뷰 사진">`
       ).join('');
       
+      const displayDate = data.dateType === 'relative' ? data.relativeDate : data.reviewDate;
+      
       return `
           <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 16px;">
               ${photosHTML}
@@ -623,31 +746,125 @@ const appData = {
                   ${data.content || '리뷰 내용을 입력해주세요.'} ${data.emoji}
               </div>
               <div style="margin-top: 12px; font-size: 12px; color: #666;">
-                  ${data.memberName || '사용자'} | ${data.reviewDate}
+                  ${data.memberName || '사용자'} | ${displayDate}
               </div>
           </div>
       `;
   }
   
   function applyFontClass(element, fontType) {
-      element.classList.remove('font-basic', 'font-round', 'font-gothic', 'font-myeongjo', 'font-handwriting');
+      // 기존 폰트 클래스 제거
+      element.classList.remove('font-nanum', 'font-malgun', 'font-dotum', 'font-gulim', 
+                                'font-gungseo', 'font-new-gulim', 'font-batang');
       
       switch(fontType) {
-          case '둥근체':
-              element.classList.add('font-round');
+          case '나눔고딕':
+              element.classList.add('font-nanum');
               break;
-          case '고딕체':
-              element.classList.add('font-gothic');
+          case '맑은고딕':
+              element.classList.add('font-malgun');
               break;
-          case '명조체':
-              element.classList.add('font-myeongjo');
+          case '돋움체':
+              element.classList.add('font-dotum');
               break;
-          case '손글씨체':
-              element.classList.add('font-handwriting');
+          case '굴림체':
+              element.classList.add('font-gulim');
               break;
-          default:
-              element.classList.add('font-basic');
+          case '궁서체':
+              element.classList.add('font-gungseo');
+              break;
+          case '새굴림':
+              element.classList.add('font-new-gulim');
+              break;
+          case '바탕체':
+              element.classList.add('font-batang');
+              break;
       }
+  }
+  
+  // 🔥 누락된 함수들 추가
+  
+  // 메뉴 관리 함수
+  function addMenu() {
+      const menuInput = document.getElementById('menu-input');
+      const menuText = menuInput.value.trim();
+      
+      if (!menuText) {
+          alert('메뉴명을 입력해주세요.');
+          return;
+      }
+      
+      const menuList = document.getElementById('menu-list');
+      const menuTag = document.createElement('span');
+      menuTag.className = 'menu-tag';
+      menuTag.innerHTML = `${menuText} <button onclick="removeMenu(this)">×</button>`;
+      
+      menuList.appendChild(menuTag);
+      menuInput.value = '';
+      
+      updatePreview();
+  }
+  
+  function removeMenu(button) {
+      button.parentElement.remove();
+      updatePreview();
+  }
+  
+  // 임시저장 모달 함수들
+  function showTempSaveList() {
+      document.getElementById('temp-save-modal').classList.remove('hidden');
+      renderTempSaveList();
+  }
+  
+  function hideTempSaveModal() {
+      document.getElementById('temp-save-modal').classList.add('hidden');
+  }
+  
+  function clearAllTempSave() {
+      if (confirm('모든 임시저장을 삭제하시겠습니까?')) {
+          currentState.cart = [];
+          saveCartToStorage();
+          updateCartCount();
+          renderTempSaveList();
+      }
+  }
+  
+  function renderTempSaveList() {
+      const container = document.getElementById('temp-save-list');
+      if (!container) return;
+      
+      if (currentState.cart.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: #666;">임시저장된 리뷰가 없습니다.</p>';
+          return;
+      }
+      
+      container.innerHTML = '';
+      currentState.cart.forEach((item, index) => {
+          const tempItem = document.createElement('div');
+          tempItem.className = 'temp-save-item';
+          tempItem.innerHTML = `
+              <div class="temp-save-item-info">
+                  <div class="temp-save-item-title">${item.brandSubtitle || '리뷰'}</div>
+                  <div class="temp-save-item-date">${new Date(item.savedAt).toLocaleString()}</div>
+              </div>
+              <div class="temp-save-item-actions">
+                  <button class="btn btn--primary btn--sm" onclick="loadFromCart(${index}); hideTempSaveModal();">불러오기</button>
+                  <button class="btn btn--secondary btn--sm" onclick="removeFromCart(${index}); renderTempSaveList();">삭제</button>
+              </div>
+          `;
+          container.appendChild(tempItem);
+      });
+  }
+  
+  // 저장 결과 모달 함수들
+  function hideSaveResultModal() {
+      document.getElementById('save-result-modal').classList.add('hidden');
+  }
+  
+  function downloadSavedImage() {
+      const filename = generateDefaultSaveName();
+      downloadReviewImage(filename);
+      hideSaveResultModal();
   }
   
   // 장바구니 관련 함수들
@@ -676,6 +893,8 @@ const appData = {
   
   function renderCartItems() {
       const container = document.getElementById('cart-items');
+      
+      if (!container) return;
       
       if (currentState.cart.length === 0) {
           container.innerHTML = '<p style="text-align: center; color: #666;">임시저장된 리뷰가 없습니다.</p>';
@@ -714,6 +933,9 @@ const appData = {
       const category = appData.categories.find(cat => 
           cat.brands.some(brand => brand.name === item.brandName)
       );
+      
+      if (!category) return;
+      
       const brand = category.brands.find(brand => brand.name === item.brandName);
       
       currentState.selectedCategory = category.name;
@@ -721,21 +943,48 @@ const appData = {
       currentState.reviewData = { ...item };
       
       // 폼 데이터 복원
-      document.getElementById('member-name').value = item.memberName || '';
-      document.getElementById('member-grade').value = item.memberGrade || '골드회원';
-      document.getElementById('store-name').value = item.storeName || '';
-      document.getElementById('review-title').value = item.title || '';
-      document.getElementById('review-content').value = item.content || '';
-      document.getElementById('font-select').value = item.font || '기본체';
-      document.getElementById('best-review').checked = item.bestReview || false;
-      document.getElementById('review-date').value = item.reviewDate || new Date().toISOString().split('T')[0];
+      const setValue = (id, value) => {
+          const element = document.getElementById(id);
+          if (element) element.value = value || '';
+      };
+      
+      setValue('member-name', item.memberName);
+      setValue('member-grade', item.memberGrade || '골드회원');
+      setValue('store-name', item.storeName);
+      setValue('review-title', item.title);
+      setValue('review-content', item.content);
+      setValue('font-select', item.font || '기본체');
+      setValue('review-count', item.reviewCount || 12);
+      setValue('avg-rating', item.avgRating || 4.8);
+      setValue('delivery-type', item.deliveryType || '알뜰배달');
+      
+      const bestReview = document.getElementById('best-review');
+      if (bestReview) {
+          bestReview.checked = item.bestReview || false;
+      }
+      
+      // 날짜 관련 복원
+      if (item.dateType === 'relative') {
+          document.querySelector('input[name="date-type"][value="relative"]').checked = true;
+          setValue('relative-date', item.relativeDate || '1개월 전');
+          document.getElementById('relative-date').classList.remove('hidden');
+          document.getElementById('absolute-date').classList.add('hidden');
+      } else {
+          document.querySelector('input[name="date-type"][value="absolute"]').checked = true;
+          setValue('absolute-date', item.reviewDate || new Date().toISOString().split('T')[0]);
+          document.getElementById('relative-date').classList.add('hidden');
+          document.getElementById('absolute-date').classList.remove('hidden');
+      }
       
       setRating(item.rating || 5);
       selectEmoji(item.emoji || '😊');
       updatePhotoPreview();
       
       // 브랜드 제목 업데이트
-      document.getElementById('brand-title').textContent = brand.subtitle;
+      const brandTitle = document.getElementById('brand-title');
+      if (brandTitle) {
+          brandTitle.textContent = brand.subtitle;
+      }
       
       showScreen('review');
       updatePreview();
@@ -786,7 +1035,7 @@ const appData = {
   }
   
   function updateCartCount() {
-      const countElements = document.querySelectorAll('#cart-count');
+      const countElements = document.querySelectorAll('#cart-count, #cart-count-2, #temp-save-count');
       countElements.forEach(element => {
           element.textContent = currentState.cart.length;
       });
@@ -900,4 +1149,3 @@ const appData = {
               showScreen('main');
       }
   }
-  
