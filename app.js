@@ -247,6 +247,42 @@ function showScreen(screenName) {
     
     currentState.screen = screenName;
     
+    // 🔥 메인화면에서 법적 고지문 2초 후 자동 사라지게 하기
+    if (screenName === 'main') {
+        const legalNotice = document.querySelector('.legal-notice');
+        if (legalNotice) {
+            // 법적 고지문을 다시 보이게 설정 (다른 화면에서 돌아온 경우)
+            legalNotice.style.display = 'block';
+            legalNotice.style.opacity = '1';
+            
+            // 2초 후 페이드아웃 효과로 사라지게 하기
+            setTimeout(() => {
+                // 현재 여전히 메인화면인 경우에만 숨기기
+                if (currentState.screen === 'main') {
+                    legalNotice.style.transition = 'opacity 0.5s ease-out';
+                    legalNotice.style.opacity = '0';
+                    
+                    // 페이드아웃 완료 후 완전히 숨기기
+                    setTimeout(() => {
+                        if (currentState.screen === 'main') {
+                            legalNotice.style.display = 'none';
+                        }
+                    }, 500); // 0.5초 페이드아웃 시간
+                }
+            }, 2000); // 2초 대기
+        }
+    }
+    
+    // 다른 화면에서는 법적 고지문을 다시 보이게 하기
+    if (screenName !== 'main') {
+        const legalNotice = document.querySelector('.legal-notice');
+        if (legalNotice) {
+            legalNotice.style.display = 'block';
+            legalNotice.style.opacity = '1';
+            legalNotice.style.transition = 'none'; // 다른 화면에서는 즉시 표시
+        }
+    }
+    
     // 화면별 초기화 작업
     if (screenName === 'review') {
         updateTempSavedCount();
