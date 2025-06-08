@@ -1,3 +1,22 @@
+:root {
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --radius-base: 8px;
+  --radius-sm: 4px;
+  --color-primary: #00D4AA;
+  --color-secondary: #e8f5e8;
+  --color-border: #ddd;
+  --color-text-secondary: #888;
+  --font-size-sm: 14px;
+  --font-size-lg: 18px;
+  --font-weight-semibold: 600;
+  --duration-normal: 0.2s;
+  --ease-standard: ease;
+}
+
 /* 🔥 새로 추가된 스타일들 */
 
 /* 날짜 유형 선택 */
