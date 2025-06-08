@@ -4,35 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>커스텀 리뷰 생성기</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <!-- 로딩 화면 -->
-    <div id="loading-screen" class="loading-screen">
+    <div id="loading-screen" class="screen loading-screen">
         <div class="loading-content">
             <div class="app-icon">
-                <div class="review-card">
-                    <div class="star-rating">
-                        <span class="star" data-index="0">★</span>
-                        <span class="star" data-index="1">★</span>
-                        <span class="star" data-index="2">★</span>
-                        <span class="star" data-index="3">★</span>
-                        <span class="star" data-index="4">★</span>
+                <div class="logo-container">
+                    <div class="star-animation">
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
                     </div>
-                    <div class="pencil-icon">✏️</div>
+                    <h1>리뷰 메이커</h1>
                 </div>
             </div>
             <p class="loading-text">나만의 리뷰를 준비 중입니다...</p>
+            <div class="loading-progress">
+                <div class="progress-bar"></div>
+            </div>
         </div>
     </div>
 
     <!-- 메인 화면 -->
-    <div id="main-screen" class="main-screen hidden">
+    <div id="main-screen" class="screen main-screen hidden">
         <div class="container">
             <header class="main-header">
                 <h1>커스텀 리뷰 생성기</h1>
-                <p class="subtitle">나만의 특별한 리뷰를 만들어보세요!</p>
+                <p class="subtitle">실제 앱처럼 생생한 리뷰를 만들어보세요!</p>
             </header>
             
             <div class="categories-grid">
@@ -40,265 +44,300 @@
                     <div class="category-icon">🛵</div>
                     <h3>배달앱</h3>
                     <p>배달음식 리뷰 스타일</p>
+                    <div class="category-brands">배만 • 여기요 • 큐팡이츠</div>
                 </div>
                 <div class="category-card" data-category="쇼핑몰">
                     <div class="category-icon">🛍️</div>
                     <h3>쇼핑몰</h3>
                     <p>온라인쇼핑 리뷰 스타일</p>
+                    <div class="category-brands">큐팡 • 쥐마켓 • 11번길</div>
                 </div>
                 <div class="category-card" data-category="카페">
                     <div class="category-icon">☕</div>
                     <h3>카페</h3>
                     <p>카페 리뷰 스타일</p>
+                    <div class="category-brands">스타버억스 • 리디야 • 튜썸플레이스</div>
                 </div>
                 <div class="category-card" data-category="영화관">
                     <div class="category-icon">🎬</div>
                     <h3>영화관</h3>
                     <p>영화 리뷰 스타일</p>
+                    <div class="category-brands">CGB • 매가박스 • 룻데시네마</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 브랜드 선택 화면 -->
-    <div id="brand-screen" class="brand-screen hidden">
+    <div id="brand-screen" class="screen brand-screen hidden">
         <div class="container">
             <header class="screen-header">
-                <button class="back-btn" onclick="goBack()">← 뒤로</button>
+                <button class="back-btn" onclick="goBack()">
+                    <span class="back-icon">←</span> 뒤로
+                </button>
                 <h2 id="category-title">카테고리 선택</h2>
-                <button class="cart-btn" onclick="showCart()">🛒 <span id="cart-count">0</span></button>
+                <div class="header-actions">
+                    <button class="temp-save-btn" onclick="showTempSaveModal()">
+                        <span class="temp-icon">📋</span>
+                        <span class="temp-count" id="temp-count-header">0</span>
+                    </button>
+                </div>
             </header>
             
-            <div class="brands-grid" id="brands-container">
-                <!-- 브랜드 카드들이 여기에 동적으로 추가됩니다 -->
+            <div class="brands-grid-horizontal" id="brands-container">
+                <!-- 브랜드 카드들이 동적으로 생성됩니다 -->
             </div>
         </div>
     </div>
 
     <!-- 리뷰 편집 화면 -->
-    <div id="review-screen" class="review-screen hidden">
+    <div id="review-screen" class="screen review-screen hidden">
         <div class="container">
             <header class="screen-header">
-                <button class="back-btn" onclick="goBack()">← 뒤로</button>
+                <button class="back-btn" onclick="goBack()">
+                    <span class="back-icon">←</span> 뒤로
+                </button>
                 <h2 id="brand-title">리뷰 작성</h2>
                 <div class="header-actions">
-                    <!-- 🔥 브랜드별 임시저장 UI -->
-                    <div class="temp-save-section">
-                        <button class="temp-save-btn" onclick="showTempSaveList()">
-                            <span class="temp-save-icon">📋</span>
-                            <span class="temp-save-count" id="temp-save-count">0</span>
-                        </button>
-                    </div>
-                    <button class="cart-btn" onclick="saveToCart()">
-                        <span id="cart-icon">🛒</span> 
-                        <span id="cart-text">임시저장</span>
-                        <span id="cart-count-2">0</span>
+                    <button class="temp-save-btn" onclick="showTempSaveModal()">
+                        <span class="temp-icon">📋</span>
+                        <span class="temp-count" id="temp-count-review">0</span>
                     </button>
-                    <button class="save-btn btn btn--primary" onclick="saveReview()">💾 저장</button>
+                    <button class="cart-btn" id="cart-btn" onclick="saveToCart()">
+                        <span id="cart-icon">💝</span> 
+                        <span id="cart-text">찜하기</span>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                    <button class="save-btn" onclick="showSaveModal()">💾 저장</button>
                 </div>
             </header>
             
             <div class="review-editor">
-                <!-- 편집 도구 -->
-                <div class="editor-tools">
-                    <div class="tool-group">
-                        <label class="form-label">📷 사진 업로드 (최대 5장)</label>
-                        <input type="file" id="photo-upload" accept="image/*" multiple class="hidden">
-                        <button class="btn btn--secondary" onclick="document.getElementById('photo-upload').click()">
-                            📷 사진 추가
-                        </button>
-                        <div id="photo-preview" class="photo-preview-container"></div>
-                    </div>
-                    
-                    <div class="tool-group">
-                        <label for="member-name" class="form-label">👤 회원명</label>
-                        <input type="text" id="member-name" class="form-control" placeholder="회원명을 입력하세요" maxlength="8">
-                    </div>
-                    
-                    <div class="tool-group">
-                        <label for="member-grade" class="form-label">🏆 회원등급</label>
-                        <select id="member-grade" class="form-control">
-                            <option value="">표시 안함</option>
-                            <option value="골드회원" selected>골드회원</option>
-                            <option value="플래티넘회원">플래티넘회원</option>
-                            <option value="다이아몬드회원">다이아몬드회원</option>
-                            <option value="단골손님">단골손님</option>
-                            <option value="첫 방문">첫 방문</option>
-                            <option value="재방문 고객">재방문 고객</option>
-                        </select>
-                    </div>
+                <!-- 편집 패널 -->
+                <div class="editor-panel">
+                    <div class="tool-section">
+                        <h3>👤 사용자 정보</h3>
+                        
+                        <div class="tool-group">
+                            <label class="form-label">프로필 사진</label>
+                            <div class="profile-selector">
+                                <div class="profile-options">
+                                    <div class="profile-option active" data-profile="default">
+                                        <div class="profile-avatar default-profile">👨</div>
+                                        <span>기본</span>
+                                    </div>
+                                    <div class="profile-option" data-profile="cute">
+                                        <div class="profile-avatar cute-profile">🐰</div>
+                                        <span>귀여움</span>
+                                    </div>
+                                    <div class="profile-option" data-profile="cool">
+                                        <div class="profile-avatar cool-profile">😎</div>
+                                        <span>멋짐</span>
+                                    </div>
+                                    <div class="profile-option" data-profile="happy">
+                                        <div class="profile-avatar happy-profile">😁</div>
+                                        <span>행복</span>
+                                    </div>
+                                    <div class="profile-option" data-profile="smart">
+                                        <div class="profile-avatar smart-profile">🤓</div>
+                                        <span>똑똑</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tool-group">
+                            <label for="member-name" class="form-label">회원명</label>
+                            <input type="text" id="member-name" class="form-control" placeholder="닉네임을 입력하세요" maxlength="10">
+                        </div>
 
-                    <!-- 🔥 새로 추가: 리뷰 통계 설정 -->
-                    <div class="tool-group">
-                        <label for="review-count" class="form-label">📊 리뷰 수</label>
-                        <input type="number" id="review-count" class="form-control" value="12" min="1" max="9999">
-                    </div>
+                        <div class="tool-group">
+                            <label for="review-count" class="form-label">리뷰 수</label>
+                            <input type="number" id="review-count" class="form-control" value="12" min="1" max="9999">
+                        </div>
 
-                    <div class="tool-group">
-                        <label for="avg-rating" class="form-label">⭐ 평균별점</label>
-                        <input type="number" id="avg-rating" class="form-control" value="4.8" min="1" max="5" step="0.1">
-                    </div>
-                    
-                    <div class="tool-group">
-                        <label for="store-name" class="form-label">🏪 상호명/상품명</label>
-                        <input type="text" id="store-name" class="form-control" placeholder="이름을 입력하세요">
-                    </div>
-                    
-                    <div class="tool-group">
-                        <label class="form-label">⭐ 별점</label>
-                        <div class="rating-input">
-                            <span class="rating-star" data-rating="1">★</span>
-                            <span class="rating-star" data-rating="2">★</span>
-                            <span class="rating-star" data-rating="3">★</span>
-                            <span class="rating-star" data-rating="4">★</span>
-                            <span class="rating-star" data-rating="5">★</span>
+                        <div class="tool-group">
+                            <label for="avg-rating" class="form-label">평균별점</label>
+                            <input type="number" id="avg-rating" class="form-control" value="4.8" min="1" max="5" step="0.1">
                         </div>
                     </div>
 
-                    <!-- 🔥 새로 추가: 리뷰 날짜 선택 -->
-                    <div class="tool-group">
-                        <label class="form-label">📅 리뷰 날짜</label>
-                        <div class="date-type-selector">
-                            <label class="radio-label">
-                                <input type="radio" name="date-type" value="relative" checked>
-                                <span>상대날짜</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="date-type" value="absolute">
-                                <span>정확날짜</span>
-                            </label>
+                    <div class="tool-section">
+                        <h3>🏪 업체 정보</h3>
+                        
+                        <div class="tool-group">
+                            <div class="store-name-header">
+                                <label for="store-name" class="form-label">상호명/상품명</label>
+                                <label class="checkbox-label store-name-toggle">
+                                    <input type="checkbox" id="show-store-name" checked>
+                                    <span>가게명 표시</span>
+                                </label>
+                            </div>
+                            <input type="text" id="store-name" class="form-control" placeholder="업체명을 입력하세요">
                         </div>
-                        <select id="relative-date" class="form-control">
-                            <option value="오늘">오늘</option>
-                            <option value="어제">어제</option>
-                            <option value="이번주">이번주</option>
-                            <option value="지난주">지난주</option>
-                            <option value="지난달">지난달</option>
-                            <option value="1개월 전" selected>1개월 전</option>
-                            <option value="2개월 전">2개월 전</option>
-                            <option value="3개월 전">3개월 전</option>
-                            <option value="4개월 전" selected>4개월 전</option>
-                            <option value="6개월 전">6개월 전</option>
-                            <option value="1년 전">1년 전</option>
-                            <option value="2년 전">2년 전</option>
-                            <option value="3년 전">3년 전</option>
-                            <option value="4년 전">4년 전</option>
-                            <option value="5년 전">5년 전</option>
-                        </select>
-                        <input type="date" id="absolute-date" class="form-control hidden">
+                        
+                        <div class="tool-group">
+                            <label class="form-label">별점</label>
+                            <div class="rating-input">
+                                <span class="rating-star" data-rating="1">★</span>
+                                <span class="rating-star" data-rating="2">★</span>
+                                <span class="rating-star" data-rating="3">★</span>
+                                <span class="rating-star" data-rating="4">★</span>
+                                <span class="rating-star" data-rating="5">★</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- 🔥 새로 추가: 배달 유형 선택 -->
-                    <div class="tool-group">
-                        <label for="delivery-type" class="form-label">🚚 배달유형</label>
-                        <select id="delivery-type" class="form-control">
-                            <option value="알뜰배달" selected>알뜰배달</option>
-                            <option value="한집배달">한집배달</option>
-                            <option value="가게배달">가게배달</option>
-                            <option value="포장">포장</option>
-                        </select>
-                    </div>
-                    
-                    <div class="tool-group">
-                        <label for="review-content" class="form-label">💬 리뷰 내용</label>
-                        <textarea id="review-content" class="form-control" rows="4" placeholder="리뷰를 작성해주세요"></textarea>
+                    <div class="tool-section">
+                        <h3>📅 날짜 설정</h3>
+                        <div class="tool-group">
+                            <div class="date-type-selector">
+                                <label class="radio-label">
+                                    <input type="radio" name="date-type" value="relative" checked>
+                                    <span>상대날짜</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="date-type" value="absolute">
+                                    <span>정확날짜</span>
+                                </label>
+                            </div>
+                            <select id="relative-date" class="form-control">
+                                <option value="오늘">오늘</option>
+                                <option value="어제">어제</option>
+                                <option value="이번주">이번주</option>
+                                <option value="지난주">지난주</option>
+                                <option value="지난달">지난달</option>
+                                <option value="1개월 전">1개월 전</option>
+                                <option value="2개월 전">2개월 전</option>
+                                <option value="3개월 전">3개월 전</option>
+                                <option value="4개월 전" selected>4개월 전</option>
+                                <option value="6개월 전">6개월 전</option>
+                                <option value="1년 전">1년 전</option>
+                                <option value="2년 전">2년 전</option>
+                                <option value="3년 전">3년 전</option>
+                                <option value="5년 전">5년 전</option>
+                            </select>
+                            <input type="date" id="absolute-date" class="form-control hidden">
+                        </div>
+
+                        <div class="tool-group delivery-type-group">
+                            <label for="delivery-type" class="form-label">배달유형</label>
+                            <select id="delivery-type" class="form-control">
+                                <option value="알뜰배달" selected>알뜰배달</option>
+                                <option value="한집배달">한집배달</option>
+                                <option value="가게배달">가게배달</option>
+                                <option value="포장">포장</option>
+                                <option value="매장식사">매장식사</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- 🔥 수정: 이모티콘을 텍스트처럼 입력 -->
-                    <div class="tool-group">
-                        <label class="form-label">😊 이모티콘</label>
-                        <div class="emoji-tabs">
-                            <button class="emoji-tab active" data-category="감정">😊</button>
-                            <button class="emoji-tab" data-category="음식">🍕</button>
-                            <button class="emoji-tab" data-category="활동">🎉</button>
-                            <button class="emoji-tab" data-category="기타">💝</button>
+                    <div class="tool-section">
+                        <h3>📝 리뷰 내용</h3>
+                        <div class="tool-group">
+                            <label for="review-title" class="form-label">리뷰 제목</label>
+                            <input type="text" id="review-title" class="form-control" placeholder="리뷰 제목을 입력하세요">
                         </div>
-                        <div class="emoji-selector" id="emoji-container">
-                            <!-- 이모티콘들이 동적으로 추가됩니다 -->
+                        
+                        <div class="tool-group">
+                            <label for="review-content" class="form-label">리뷰 내용</label>
+                            <textarea id="review-content" class="form-control" rows="4" placeholder="맛있게 잘 먹었습니다! 다음에도 주문할게요 👍"></textarea>
                         </div>
-                        <input type="text" id="emoji-input" class="form-control" placeholder="선택한 이모티콘이 여기에 표시됩니다">
                     </div>
 
-                    <!-- 🔥 새로 추가: 메뉴 관리 -->
-                    <div class="tool-group">
-                        <label class="form-label">🍽️ 추천 메뉴</label>
-                        <div class="menu-manager">
-                            <input type="text" id="menu-input" class="form-control" placeholder="메뉴명을 입력하세요">
-                            <button type="button" class="btn btn--secondary" onclick="addMenu()">메뉴 추가</button>
-                        </div>
-                        <div id="menu-list" class="menu-list">
-                            <!-- 기본 메뉴들 -->
-                            <span class="menu-tag">맛최킹 왕 👍 <button onclick="removeMenu(this)">×</button></span>
-                            <span class="menu-tag">본모자 로제 떡볶이 👍 <button onclick="removeMenu(this)">×</button></span>
+                    <div class="tool-section">
+                        <h3>📷 사진 업로드</h3>
+                        <div class="tool-group">
+                            <input type="file" id="photo-upload" accept="image/*" multiple class="hidden">
+                            <button class="btn btn--secondary" onclick="document.getElementById('photo-upload').click()">
+                                📷 사진 추가 (최대 5장)
+                            </button>
+                            <div id="photo-preview" class="photo-preview-container"></div>
                         </div>
                     </div>
-                    
-                    <!-- 🔥 수정: 더 많은 폰트 추가 -->
-                    <div class="tool-group">
-                        <label for="font-select" class="form-label">🔤 폰트</label>
-                        <select id="font-select" class="form-control">
-                            <option value="기본체">기본체</option>
-                            <option value="둥근체">둥근체</option>
-                            <option value="고딕체">고딕체</option>
-                            <option value="명조체">명조체</option>
-                            <option value="손글씨체">손글씨체</option>
-                            <option value="나눔고딕">나눔고딕</option>
-                            <option value="맑은고딕">맑은고딕</option>
-                            <option value="돋움체">돋움체</option>
-                            <option value="굴림체">굴림체</option>
-                            <option value="궁서체">궁서체</option>
-                            <option value="새굴림">새굴림</option>
-                            <option value="바탕체">바탕체</option>
-                        </select>
+
+                    <div class="tool-section">
+                        <h3>🍽️ 추천 메뉴</h3>
+                        <div class="tool-group">
+                            <div class="menu-manager">
+                                <input type="text" id="menu-input" class="form-control" placeholder="메뉴명을 입력하세요">
+                                <button type="button" class="btn btn--secondary" onclick="addMenu()">추가</button>
+                            </div>
+                            <div id="menu-list" class="menu-list">
+                                <span class="menu-tag">맛최킹 왕 👍 <button onclick="removeMenu(this)">×</button></span>
+                                <span class="menu-tag">본모자 로제 떡볶이 👍 <button onclick="removeMenu(this)">×</button></span>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="tool-group">
-                        <label class="form-label">🏆 베스트리뷰 뱃지</label>
-                        <div class="best-review-options">
+
+                    <div class="tool-section">
+                        <h3>😊 이모티콘</h3>
+                        <div class="tool-group">
+                            <div class="emoji-tabs">
+                                <button class="emoji-tab active" data-category="감정">😊</button>
+                                <button class="emoji-tab" data-category="음식">🍕</button>
+                                <button class="emoji-tab" data-category="활동">🎉</button>
+                                <button class="emoji-tab" data-category="기타">💝</button>
+                            </div>
+                            <div class="emoji-selector" id="emoji-container">
+                                <!-- 이모티콘들이 동적으로 추가됩니다 -->
+                            </div>
+                            <input type="text" id="emoji-input" class="form-control" placeholder="선택한 이모티콘이 여기에 표시됩니다">
+                        </div>
+                    </div>
+
+                    <div class="tool-section">
+                        <h3>🔤 스타일 설정</h3>
+                        <div class="tool-group">
+                            <label for="font-select" class="form-label">폰트</label>
+                            <select id="font-select" class="form-control">
+                                <option value="기본체">기본체</option>
+                                <option value="둥근체">둥근체</option>
+                                <option value="고딕체">고딕체</option>
+                                <option value="명조체">명조체</option>
+                                <option value="손글씨체">손글씨체</option>
+                                <option value="나눔고딕">나눔고딕</option>
+                                <option value="맑은고딕">맑은고딕</option>
+                                <option value="돋움체">돋움체</option>
+                                <option value="굴림체">굴림체</option>
+                                <option value="궁서체">궁서체</option>
+                                <option value="새굴림">새굴림</option>
+                                <option value="바탕체">바탕체</option>
+                            </select>
+                        </div>
+                        
+                        <div class="tool-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="best-review" />
-                                <span>베스트리뷰로 표시</span>
+                                <span>🏆 베스트리뷰 뱃지 표시</span>
                             </label>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 미리보기 -->
-                <div class="preview-container">
-                    <h3>📱 실시간 미리보기</h3>
-                    <div id="review-preview" class="review-preview">
-                        <!-- 브랜드별 리뷰 미리보기가 여기에 표시됩니다 -->
+                <!-- 미리보기 패널 -->
+                <div class="preview-panel">
+                    <div class="preview-header">
+                        <h3>📱 실시간 미리보기</h3>
+                        <div class="preview-actions">
+                            <button class="btn btn--sm btn--secondary" onclick="resetPreview()">🔄 초기화</button>
+                        </div>
+                    </div>
+                    <div class="preview-container">
+                        <div id="review-preview" class="review-preview">
+                            <!-- 브랜드별 리뷰 미리보기가 여기에 표시됩니다 -->
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 장바구니(임시저장) 화면 -->
-    <div id="cart-screen" class="cart-screen hidden">
-        <div class="container">
-            <header class="screen-header">
-                <button class="back-btn" onclick="hideCart()">← 뒤로</button>
-                <h2>🛒 임시저장 리뷰</h2>
-                <button class="btn btn--secondary" onclick="clearCart()">🗑️ 전체삭제</button>
-            </header>
-            
-            <div class="cart-content">
-                <div class="search-bar">
-                    <input type="text" id="cart-search" class="form-control" placeholder="🔍 리뷰 검색...">
-                </div>
-                <div id="cart-items" class="cart-items">
-                    <!-- 임시저장된 리뷰들이 여기에 표시됩니다 -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 🔥 새로 추가: 임시저장 목록 모달 -->
+    <!-- 임시저장 모달 -->
     <div id="temp-save-modal" class="modal hidden">
         <div class="modal-content temp-save-modal-content">
             <div class="temp-save-header">
-                <h3>📋 임시저장된 리뷰</h3>
+                <h3 id="temp-modal-title">📋 찜한 리뷰</h3>
                 <button class="temp-save-close" onclick="hideTempSaveModal()">×</button>
             </div>
             <div class="temp-save-list" id="temp-save-list">
@@ -306,7 +345,7 @@
             </div>
             <div class="temp-save-actions">
                 <button class="btn btn--secondary" onclick="clearAllTempSave()">전체 삭제</button>
-                <button class="btn btn--secondary" onclick="hideTempSaveModal()">닫기</button>
+                <button class="btn btn--primary" onclick="hideTempSaveModal()">닫기</button>
             </div>
         </div>
     </div>
@@ -315,8 +354,10 @@
     <div id="save-modal" class="modal hidden">
         <div class="modal-content">
             <h3>💾 리뷰 저장</h3>
-            <label for="save-name" class="form-label">저장 이름</label>
-            <input type="text" id="save-name" class="form-control" placeholder="예: 배달의 만족 리뷰 20250608">
+            <div class="tool-group">
+                <label for="save-name" class="form-label">저장 이름</label>
+                <input type="text" id="save-name" class="form-control" placeholder="예: 배만_맛집리뷰_20250608">
+            </div>
             <div class="modal-actions">
                 <button class="btn btn--secondary" onclick="hideSaveModal()">취소</button>
                 <button class="btn btn--primary" onclick="confirmSave()">저장</button>
@@ -324,16 +365,16 @@
         </div>
     </div>
 
-    <!-- 🔥 새로 추가: 저장 결과 확인 모달 -->
+    <!-- 저장 결과 모달 -->
     <div id="save-result-modal" class="modal hidden">
-        <div class="modal-content">
-            <h3>💾 저장 완료</h3>
+        <div class="modal-content save-result-content">
+            <h3>✅ 저장 완료</h3>
             <div class="save-result-preview" id="save-result-preview">
-                <!-- 실제 저장된 이미지가 여기에 표시 -->
+                <!-- 저장된 이미지 미리보기 -->
             </div>
             <div class="modal-actions">
                 <button class="btn btn--secondary" onclick="hideSaveResultModal()">닫기</button>
-                <button class="btn btn--primary" onclick="downloadSavedImage()">다운로드</button>
+                <button class="btn btn--primary" onclick="downloadSavedImage()">💾 다운로드</button>
             </div>
         </div>
     </div>
